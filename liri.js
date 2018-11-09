@@ -1,13 +1,23 @@
-require('dotenv').config();
+//Get the Packages/Modules used in this exercise
+
+// dotenv gets the environment variable from a .env file to  process.env 
+// thus helping in keeping the configuration settings seperate from the code
+require('dotenv').config();  
+
+//Spotify node API
 var Spotify = require('node-spotify-api');
+
+// HTTP Client
 var request = require("request");
+
+// to format the dates
 var moment = require('moment');
+
+// to access the file system
 var fs = require("fs");
 
-
+// keys for Spotify API are stored here
 var keys = require("./key.js")
-
-
 
 /**
  * Get spotify instance with our id
@@ -32,10 +42,10 @@ var action = process.argv[2];
 var action_param = process.argv[3];
 
 if (action === "do-what-it-says") {
+    // get the action to be performed by reading the random.txt
     var action_info = getActionCmdFromFile();
-    debugger;
-    action          = action_info.action;
-    action_param    = action_info.action_param;
+    action = action_info.action;
+    action_param = action_info.action_param;
 }
 
 switch (action) {
@@ -56,6 +66,7 @@ switch (action) {
         console.log("Invalid Command Entered");
         break;
 }
+
 
 
 /**
@@ -152,6 +163,13 @@ function movieThis(movie_name) {
 
 }
 
+/**
+ *  This function display the concert info passed as parameter
+ * 
+ * @param {information about venue, loc and date} concertInfo 
+ * @param {event#} index 
+ */
+
 function displayConcertInfo(concertInfo, index) {
 
     console.log("\nEVENT#", + (index + 1));
@@ -198,28 +216,41 @@ function concertThis(artist_name) {
 
 }
 
-
+/**
+ *  This function reads the random.txt file,
+ *  parses the contents and returns the value
+ *  in format:
+ * 
+ *  action: expected values are movie-this/concert-this/spotify-this-song
+ *  action_params: song/movie/artist name
+ */
 function getActionCmdFromFile() {
+
     var ret_val = {
-        action:"",
+        action: "",
         action_param: ""
-    }
+    };
+
     // This block of code will read from the "movies.txt" file.
     // It's important to include the "utf8" parameter or the code will provide stream data (garbage)
     // The code will store the contents of the reading inside the variable "data"
-    fs.readFile("random.txt", "utf8", function (error, data) {
+    var data = fs.readFileSync("random.txt", "utf8");
 
-        // If the code experiences any errors it will log the error to the console.
-        if (error) {
-            return console.log("Failed to read random.txt file, error code =  " + error);
-        }
+    // data is expected to be in the format:
+    // movie-this, "movie name"
 
-       var dataArray = data.split(",");
-       ret_val.action = dataArray[0];
-       ret_val.action_param = dataArray[1];
-debugger;
-       return ret_val;
+    //splitting the contents on ,
+    var dataArray = data.split(",");
+    // save the first entry - the command i.e concert-this/movie-this/spotify-this-song
+    ret_val.action = dataArray[0];
 
-    });
+    var param_str = dataArray[1];
+    
+    //get rid of the white space
+    param_str = param_str.trim();
+    
+    // get rid of the extra "" at the begining and the end 
+    ret_val.action_param = param_str.substring(1, param_str.length - 1);
+    return ret_val;
 
 }
